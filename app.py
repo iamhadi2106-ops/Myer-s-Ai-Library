@@ -25,9 +25,11 @@ from googlesearch import search as gsearch
 from scholarly import scholarly
 from langchain_core.prompts import ChatPromptTemplate
 
+# Environment
+from dotenv import load_dotenv
+load_dotenv()
 
-# Voice Imports
-import speech_recognition as sr
+# Screen capture
 import pyautogui
 from PIL import Image
 
@@ -64,31 +66,6 @@ class LibraryBackend:
 
     def set_api_key(self, api_key: str):
         self.api_key = api_key
-
-    # `speak` method removed per request. Voice TTS calls were stripped from UI.
-
-    def listen(self) -> tuple[Optional[str], Optional[str]]:
-        """Listen for user command with ultra-high sensitivity calibration."""
-        r = sr.Recognizer()
-        # Calibrate for much higher sensitivity to capture quiet speech
-        r.energy_threshold = 300 
-        r.dynamic_energy_threshold = True
-        try:
-            with sr.Microphone() as source:
-                # Optimized noise floor adjustment
-                r.adjust_for_ambient_noise(source, duration=0.8)
-                # Significantly longer windows for natural human speech
-                audio = r.listen(source, timeout=12, phrase_time_limit=15)
-                text = r.recognize_google(audio)
-                return text, None
-        except sr.WaitTimeoutError:
-            return None, "Listening timed out. Please speak within 12 seconds."
-        except sr.UnknownValueError:
-            return None, "Speech was too faint. Try speaking a bit louder or closer to the mic."
-        except sr.RequestError:
-            return None, "Neural Link (Google API) is unreachable. Check internet."
-        except Exception as e:
-            return None, f"Hardware Error: {str(e)}"
 
     def process_pdf(self, file_path: str):
         loader = PyPDFLoader(file_path)
@@ -229,7 +206,10 @@ st.set_page_config(
 )
 
 if "backend" not in st.session_state:
-    st.session_state.backend = LibraryBackend()
+    env_key = os.getenv("GROQ_API_KEY")
+    st.session_state.backend = LibraryBackend(api_key=env_key)
+    if env_key:
+        st.session_state['api_key'] = env_key
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -302,47 +282,11 @@ with st.sidebar:
     
     st.divider()
     st.markdown('<p style="font-size: 0.9rem; font-weight: 700; color: #00FFAA;">SYSTEM AUTH</p>', unsafe_allow_html=True)
+    # show current key source (from .env or session)
     stored_key = st.text_input("Groq Intelligence Key", type="password", placeholder="Enter Neural Key...", value=st.session_state.get('api_key', ""))
     if stored_key:
         st.session_state.backend.set_api_key(stored_key)
         st.session_state['api_key'] = stored_key
-    
-    st.divider()
-    
-    # --- VOICE AGENT BUTTON ---
-    if st.button("🎙️ SPEAK"):
-        with st.spinner("Librarian is listening..."):
-            user_speech, error_msg = st.session_state.backend.listen()
-            if user_speech:
-                st.toast(f"Captured: '{user_speech}'")
-                # Decide mode: RAG or Web
-                lower_speech = user_speech.lower()
-                if any(word in lower_speech for word in ["search", "find", "global", "look for"]):
-                    # Extract book title
-                    query = user_speech.lower().replace("search", "").replace("find", "").replace("global", "").replace("look", "").replace("for", "").strip()
-                    results = st.session_state.backend.search_global_books(query)
-                    if results and "error" not in results[0]:
-                        msg = f"I've scanned the global grid for '{query}'. I found {len(results)} potential matches."
-                    else:
-                        msg = f"I attempted to search the global grid for '{query}', but encountered a system error or no results."
-                    
-                    # previously: st.session_state.backend.speak(msg)
-                    st.session_state.messages.append({"role": "user", "content": f"[Voice] {user_speech}"})
-                    st.session_state.messages.append({"role": "assistant", "content": msg})
-                    # Also switch to Universal search if possible? Better to keep them in chat.
-                else:
-                    # Treat as knowledge query
-                    response = st.session_state.backend.ask_library(user_speech)
-                    # If empty or confused, use general AI
-                    if "empty" in response.lower() or "not found" in response.lower():
-                        response = st.session_state.backend.chat_with_ai(user_speech)
-                    
-                    # previously: st.session_state.backend.speak(response)
-                    st.session_state.messages.append({"role": "user", "content": f"[Voice] {user_speech}"})
-                    st.session_state.messages.append({"role": "assistant", "content": response})
-            else:
-                st.error(f"Audio Cortex Error: {error_msg}")
-
     st.markdown(f'<p style="font-size: 0.65rem; opacity: 0.5;">MODEL: {st.session_state.backend.model_name}</p>', unsafe_allow_html=True)
 
 # --- PAGE LOGIC ---
