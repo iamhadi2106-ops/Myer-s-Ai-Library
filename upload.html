@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Upload Resources | Myer's College{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 800px; margin: 0 auto; text-align: center;">
+    <h1 style="font-size: 3rem; margin-bottom: 0;">Upload Resources</h1>
+    <p style="font-size: 1.2rem; opacity: 0.8; color: var(--secondary); margin-top: 5px;">Add books and documents to the College digital library.</p>
+    <img src="{% static 'library/images/myers_crest.jpg' %}" style="width: 120px; filter: contrast(1.1); margin: 2rem 0;">
+    
+    <div style="text-align: left; background: #fafafa; border-radius: 20px; padding: 2rem; border: 1px solid var(--border);">
+        <form method="POST">
+            {% csrf_token %}
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 800; display: block; margin-bottom: 10px; color: var(--primary);">BOOK TITLE</label>
+                {{ form.title }}
+                <label style="font-weight: 800; display: block; margin-bottom: 10px; color: var(--primary);">AUTHOR / PUBLISHER</label>
+                {{ form.author }}
+            </div>
+            
+            <p style="font-size: 0.85rem; padding: 15px; background: #e3f2fd; color: #1565c0; border-radius: 10px; margin-bottom: 2rem; border-left: 5px solid #1976d2;">
+                <b>Note:</b> This form adds a catalog record with title and author details.
+            </p>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 60px; font-size: 1.2rem;">Add Book</button>
+        </form>
+    </div>
+    
+    <div style="margin-top: 2rem;">
+        <a href="{% url 'book_list' %}" style="text-decoration: none; color: var(--primary); font-weight: 700; opacity: 0.6;">Return to Library Dashboard</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Myer's College Digital Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #800000;
+            --primary-light: #b22929;
+            --secondary: #5f0b0d;
+            --accent: #ffb37a;
+            --bg: #120607;
+            --card-bg: #ffffff;
+            --text: #2B1615;
+            --border: rgba(128, 0, 0, 0.14);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background:
+                radial-gradient(circle at 18% 20%, rgba(255, 179, 122, 0.22), transparent 28%),
+                radial-gradient(circle at 85% 18%, rgba(178, 41, 41, 0.4), transparent 30%),
+                linear-gradient(140deg, #1a0709 0%, #120607 100%);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: linear-gradient(170deg, #ffffff 0%, #fff8f5 100%);
+            border-radius: 40px;
+            padding: 4rem;
+            width: 100%;
+            max-width: 470px;
+            text-align: center;
+            box-shadow: 0 30px 65px rgba(0,0,0,0.35);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, rgba(255, 179, 122, 0.12), transparent 35%);
+            pointer-events: none;
+        }
+
+        img { width: 140px; margin-bottom: 2rem; }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        p { opacity: 0.75; margin-bottom: 2.5rem; font-size: 1.05rem; }
+
+        .input-group { margin-bottom: 1.5rem; text-align: left; }
+        label { font-weight: 800; font-size: 0.8rem; color: var(--primary); display: block; margin-bottom: 8px; margin-left: 10px;}
+
+        input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(128, 0, 0, 0.2);
+            font-size: 1rem;
+            text-align: center;
+            box-sizing: border-box;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(178, 41, 41, 0.12);
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px rgba(128, 0, 0, 0.25);
+        }
+
+        .error { color: var(--secondary); font-size: 0.9rem; font-weight: 700; margin-bottom: 1.5rem; }
+        .hint {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-top: 1.5rem;
+            background: rgba(128, 0, 0, 0.06);
+            border-radius: 10px;
+            padding: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <img src="{% static 'library/images/myers_crest.jpg' %}" alt="Myer's College">
+        <h1>Digital Library Portal</h1>
+        <p>Secure access to the College digital library</p>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="input-group">
+                <label>REGISTRATION ID</label>
+                <input type="text" name="username" placeholder="Student / Faculty ID" autofocus>
+            </div>
+            
+            <div class="input-group">
+                <label>PASSWORD</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+            
+            <button type="submit">SIGN IN</button>
+        </form>
+
+        <div class="hint">For administrator access, leave ID blank and enter the admin code.</div>
+        <p style="font-size: 0.8rem; margin-top: 3rem; opacity: 0.4;">© 2026 Myer's College Digital Infrastructure</p>
+    </div>
+</body>
+</html>

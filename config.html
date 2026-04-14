@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Configuration | Myer's College{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+    <h1 style="font-size: 2.8rem; margin-bottom: 0;">AI Configuration</h1>
+    <p style="font-size: 1.1rem; opacity: 0.8; color: var(--secondary); margin-top: 5px;">Manage API access for the library assistant.</p>
+    
+    <form method="POST" style="margin-top: 2rem; background: #fff; padding: 2rem; border-radius: 20px; border: 1px solid var(--border);">
+        {% csrf_token %}
+        <div style="text-align: left; margin-bottom: 1.5rem;">
+            <label style="font-weight: 800; display: block; margin-bottom: 15px; font-size: 0.9rem; color: var(--primary);">GROQ API KEY</label>
+            <input type="password" name="api_key" value="{{ config.groq_api_key|default:'' }}" placeholder="Enter API key..." style="font-size: 1.2rem; border: 2px solid var(--primary);">
+            <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 10px;">This key powers the AI assistant and document retrieval features. Keep it confidential.</p>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1.2rem; font-size: 1rem;">Save Configuration</button>
+    </form>
+    
+    <div style="margin-top: 3rem; text-align: left;">
+        <h3>System Information</h3>
+        <p style="font-size: 0.9rem;">Language Model: <b>LLaMA 3 70B Versatile</b></p>
+        <p style="font-size: 0.9rem;">Embeddings Model: <b>HuggingFace all-MiniLM-L6-v2</b></p>
+        <p style="font-size: 0.9rem;">Status: <span class="badge">Active</span></p>
+    </div>
+</div>
+{% endblock %}

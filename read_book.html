@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Read | {{ book.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reader-shell {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 1rem;
+    }
+
+    .reader-panel {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1rem;
+    }
+
+    .reader-frame {
+        width: 100%;
+        min-height: 76vh;
+        border: 0;
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .reader-text {
+        max-height: 70vh;
+        overflow: auto;
+        white-space: pre-wrap;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+        .reader-shell { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h1 style="margin-top: 0;">{{ book.title }}</h1>
+    <p style="opacity: 0.75; margin-top: 0.2rem;">By {{ book.author|default:"Institutional Collection" }}</p>
+
+    <div class="reader-shell">
+        <aside class="reader-panel">
+            <h3 style="margin-top: 0;">Reading Options</h3>
+            {% if local_pdf_url or external_url %}
+                <a class="btn btn-primary" style="width: 100%; margin-bottom: 0.6rem;" href="{% url 'download_book' book.pk %}">
+                    Download PDF
+                </a>
+            {% endif %}
+            {% if external_url %}
+                <a class="btn" style="width: 100%; border: 1px solid var(--primary); color: var(--primary);" href="{{ external_url }}" target="_blank" rel="noopener noreferrer">
+                    Open Source Link
+                </a>
+            {% endif %}
+            <p style="margin-top: 1rem; opacity: 0.8; font-size: 0.9rem;">
+                {% if local_pdf_url %}
+                This book is available in your local archive and can be read below.
+                {% elif external_url %}
+                This title is linked from an external source and can be opened below.
+                {% else %}
+                No PDF is currently attached. Showing the full available book text/details below.
+                {% endif %}
+            </p>
+        </aside>
+
+        <section class="reader-panel">
+            {% if local_pdf_url %}
+                <iframe class="reader-frame" src="{{ local_pdf_url }}"></iframe>
+            {% elif external_url %}
+                <iframe class="reader-frame" src="{{ external_url }}"></iframe>
+            {% elif full_text %}
+                <h3 style="margin-top: 0;">Full Available Text</h3>
+                <div class="reader-text">{{ full_text }}</div>
+            {% else %}
+                <h3 style="margin-top: 0;">No Digital Copy Yet</h3>
+                <p style="opacity: 0.8;">Please upload a PDF for this title or add a source link in your Excel sheet.</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

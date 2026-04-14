@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Student Management | Myer's College{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h1 style="font-size: 2.8rem; margin-bottom: 0;">Student Management</h1>
+    <p style="font-size: 1.1rem; opacity: 0.8; color: var(--secondary); margin-top: 5px;">Manage student accounts and library access status.</p>
+    
+    <div style="margin-top: 2rem;">
+        <table style="width: 100%; border-collapse: collapse; background: #fff; border-radius: 20px; overflow: hidden; border: 1px solid var(--border);">
+            <thead style="background: var(--primary); color: white; text-align: left;">
+                <tr>
+                    <th style="padding: 20px;">STUDENT ID</th>
+                    <th style="padding: 20px;">REGISTRATION DATE</th>
+                    <th style="padding: 20px;">ACCESS STATUS</th>
+                    <th style="padding: 20px; text-align: right;">ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 20px; font-weight: 700;">{{ student.user.username }}</td>
+                    <td style="padding: 20px; opacity: 0.7;">{{ student.user.date_joined|date:"M d, Y" }}</td>
+                    <td style="padding: 20px;">
+                        {% if student.is_suspended %}
+                        <span class="badge" style="background: #ffebee; color: #c62828;">SUSPENDED</span>
+                        {% else %}
+                        <span class="badge" style="background: #e8f5e9; color: #2e7d32;">ACTIVE</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 20px; text-align: right;">
+                        <form method="POST" action="{% url 'toggle_suspension' student.pk %}" style="display: inline;">
+                            {% csrf_token %}
+                            {% if student.is_suspended %}
+                            <button type="submit" class="btn" style="background: #e8f5e9; color: #2e7d32; font-size: 0.8rem; padding: 5px 15px;">Activate Access</button>
+                            {% else %}
+                            <button type="submit" class="btn" style="background: #ffebee; color: #c62828; font-size: 0.8rem; padding: 5px 15px;">Suspend Access</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

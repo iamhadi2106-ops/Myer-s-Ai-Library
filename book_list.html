@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Myer's College | Library Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        padding: 1rem 1.2rem;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.7;
+        margin: 0 0 0.35rem;
+    }
+
+    .stat-value {
+        margin: 0;
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+
+    .collection-toolbar {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .toolbar-input {
+        flex: 1;
+        min-width: 250px;
+        margin-bottom: 0;
+    }
+
+    .toolbar-select {
+        width: 190px;
+        margin-bottom: 0;
+    }
+
+    .book-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .hidden-card {
+        display: none !important;
+    }
+
+    .empty-filter-state {
+        display: none;
+        text-align: center;
+        opacity: 0.7;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-banner" data-aos="fade-down">
+    <h1 class="hero-title">Library Collection</h1>
+    <p class="hero-subtitle">Access, review, and manage the College digital resources.</p>
+    <p style="margin-top: 1rem; max-width: 640px; line-height: 1.6; opacity: 0.92;">Welcome to the College digital library. You can search records, add new resources, and use the AI assistant for quick reference support.</p>
+</div>
+
+<div class="stats-grid" data-aos="fade-up">
+    <div class="stat-card">
+        <p class="stat-label">Total Titles</p>
+        <p class="stat-value">{{ books.count }}</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Discovery Mode</p>
+        <p class="stat-value">AI Ready</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Theme</p>
+        <p class="stat-value">Maroon</p>
+    </div>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h2>Available Collection (<span id="visible-count">{{ books.count }}</span>)</h2>
+    <div style="display: flex; gap: 10px;">
+        <form method="GET" action="{% url 'search_exact' %}" style="display: flex; gap: 5px;">
+            <input type="text" name="q" placeholder="Exact title search..." style="margin-bottom: 0; width: 250px;">
+            <button type="submit" class="btn btn-primary">Search Local</button>
+        </form>
+    </div>
+</div>
+
+<div class="collection-toolbar">
+    <input id="quick-filter" class="toolbar-input" type="text" placeholder="Quick filter by title or author...">
+    <select id="sort-mode" class="toolbar-select">
+        <option value="title-asc">Sort: Title A-Z</option>
+        <option value="title-desc">Sort: Title Z-A</option>
+    </select>
+    <button id="random-pick" type="button" class="btn">Highlight Random Book</button>
+</div>
+
+<div id="book-grid" class="book-grid">
+    {% for book in books %}
+    <div class="glass-card book-card" data-title="{{ book.title|lower }}" data-author="{{ book.author|default:'College Collection'|lower }}" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|default:1|add:1 }}00" style="padding: 1.5rem; display: flex; flex-direction: column;">
+        <span class="badge">FEATURED TITLE</span>
+        <h3 style="margin: 10px 0 5px;">{{ book.title }}</h3>
+        <p style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 15px;">By {{ book.author|default:"College Collection" }}</p>
+        
+        {% if book.description %}
+        <p style="font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px;">{{ book.description|truncatechars:120 }}</p>
+        {% else %}
+        <p style="font-size: 0.9rem; font-style: italic; opacity: 0.6; margin-bottom: 20px;">No description is available yet. You can use Ask AI for a quick summary.</p>
+        {% endif %}
+        
+        <div style="margin-top: auto; display: flex; gap: 10px; flex-direction: column;">
+            <a href="{% url 'ai_chat' %}?book_id={{ book.id }}" class="btn" style="border: 1px solid var(--primary); color: var(--primary); padding: 10px;">Ask AI</a>
+            {% if role == 'teacher' or role == 'admin' %}
+            <a href="{% url 'delete_book' book.pk %}" class="btn" style="background: var(--secondary); color: white; padding: 10px; font-size: 0.8rem; margin-top: 5px;">Remove Book</a>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="glass-card" style="grid-column: 1 / -1; text-align: center;">
+        <p style="opacity: 0.7;">Your library is ready for its first collection. Use <strong>Upload Resources</strong> to add books.</p>
+    </div>
+    {% endfor %}
+</div>
+<p id="empty-filter-state" class="empty-filter-state">No titles match your filter. Try a different keyword.</p>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function() {
+        const filterInput = document.getElementById('quick-filter');
+        const sortMode = document.getElementById('sort-mode');
+        const randomButton = document.getElementById('random-pick');
+        const grid = document.getElementById('book-grid');
+        const visibleCount = document.getElementById('visible-count');
+        const emptyState = document.getElementById('empty-filter-state');
+        if (!grid) return;
+
+        const cards = Array.from(grid.querySelectorAll('.book-card'));
+
+        function refreshCount() {
+            const visible = cards.filter((card) => !card.classList.contains('hidden-card'));
+            visibleCount.textContent = String(visible.length);
+            emptyState.style.display = visible.length ? 'none' : 'block';
+            return visible;
+        }
+
+        function applyFilter() {
+            const query = (filterInput.value || '').toLowerCase().trim();
+            cards.forEach((card) => {
+                const searchable = `${card.dataset.title} ${card.dataset.author}`;
+                const matches = searchable.includes(query);
+                card.classList.toggle('hidden-card', !matches);
+            });
+            refreshCount();
+        }
+
+        function applySort() {
+            const mode = sortMode.value;
+            const sorted = [...cards].sort((a, b) => {
+                const left = a.dataset.title || '';
+                const right = b.dataset.title || '';
+                return mode === 'title-desc' ? right.localeCompare(left) : left.localeCompare(right);
+            });
+            sorted.forEach((card) => grid.appendChild(card));
+        }
+
+        function pickRandomVisible() {
+            const visible = refreshCount();
+            if (!visible.length) return;
+            const target = visible[Math.floor(Math.random() * visible.length)];
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.style.transform = 'translateY(-10px) scale(1.02)';
+            setTimeout(() => {
+                target.style.transform = '';
+            }, 650);
+        }
+
+        filterInput.addEventListener('input', applyFilter);
+        sortMode.addEventListener('change', applySort);
+        randomButton.addEventListener('click', pickRandomVisible);
+
+        applySort();
+        refreshCount();
+    })();
+</script>
+{% endblock %}

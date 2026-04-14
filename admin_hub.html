@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel | Myer's College{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0;">Administration Panel</h1>
+    <p style="font-size: 1.1rem; opacity: 0.8; color: var(--secondary); margin-top: 5px;">Manage user access and system configuration.</p>
+    
+    {% if success %}
+    <div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 12px; margin: 20px 0; font-weight: 700;">
+        {{ success }}
+    </div>
+    {% endif %}
+    
+    {% if error %}
+    <div style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 12px; margin: 20px 0; font-weight: 700;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div style="text-align: left; background: #fff; padding: 2rem; border-radius: 20px; border: 1px solid var(--border); margin-top: 2rem;">
+        <h3 style="margin-top: 0;">Create New User Account</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <label style="font-weight: 700; display: block; margin-bottom: 8px;">USERNAME</label>
+            <input type="text" name="new_user_id" placeholder="Enter username..." required>
+            
+            <label style="font-weight: 700; display: block; margin-bottom: 8px;">PASSWORD</label>
+            <input type="password" name="new_user_pass" placeholder="Enter password..." required>
+            
+            <label style="font-weight: 700; display: block; margin-bottom: 8px;">ROLE</label>
+            <select name="new_role" style="padding: 14px; width: 100%; margin-bottom: 2rem; border-radius: 12px; border: 1px solid var(--border);">
+                <option value="student">Student Account</option>
+                <option value="teacher">Teacher Account</option>
+            </select>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px;">Create Account</button>
+        </form>
+    </div>
+    
+    <div style="margin-top: 3rem; text-align: left;">
+        <h3>User Directory</h3>
+        <div style="background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: var(--primary); color: white;">
+                    <tr>
+                        <th style="padding: 15px;">USERNAME</th>
+                        <th style="padding: 15px;">ROLE</th>
+                        <th style="padding: 15px; text-align: right;">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in users %}
+                    <tr>
+                        <td style="padding: 15px; font-weight: 700;">{{ profile.user.username }}</td>
+                        <td style="padding: 15px;"><span class="badge">{{ profile.role }}</span></td>
+                        <td style="padding: 15px; text-align: right;">
+                            <a href="{% url 'delete_user' profile.user.pk %}" class="btn" style="background: var(--secondary); color: white; padding: 5px 15px; font-size: 0.8rem;">Remove Account</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div style="margin-top: 2rem; display: flex; gap: 10px; justify-content: center;">
+        <a href="{% url 'config_view' %}" class="btn" style="background: var(--accent); color: var(--primary);">AI Configuration</a>
+    </div>
+</div>
+{% endblock %}

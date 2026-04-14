@@ -1,0 +1,330 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Myer's College Digital Library{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #800000;
+            --primary-light: #a31d1d;
+            --secondary: #0a2e5c;
+            --accent: #E8AA42;
+            --bg: #F9F6F0;
+            --card-bg: #ffffff;
+            --text: #2B1615;
+            --border: rgba(128, 0, 0, 0.1);
+            --hero-end: #4a0000;
+            --glow: rgba(128, 0, 0, 0.25);
+        }
+
+        [data-theme="dark"] {
+            --bg: #120607;
+            --card-bg: #1f0d0f;
+            --text: #f6dede;
+            --border: rgba(255, 203, 203, 0.15);
+            --primary: #8c1a1a;
+            --primary-light: #b22929;
+            --secondary: #6f1111;
+            --accent: #ffb37a;
+            --hero-end: #2f0608;
+            --glow: rgba(178, 41, 41, 0.32);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background:
+                radial-gradient(circle at 15% 10%, rgba(232, 170, 66, 0.12), transparent 30%),
+                radial-gradient(circle at 85% 20%, var(--glow), transparent 26%),
+                var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-light); }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            background: var(--card-bg);
+            border-right: 2px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1rem;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.06);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .sidebar-brand img {
+            width: 100px;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-brand h2 {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            height: 100%;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            text-decoration: none;
+            color: var(--text);
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--primary);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            margin-top: auto;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        [data-theme="dark"] .theme-toggle { background: rgba(255,255,255,0.05); }
+
+        .toggle-dot {
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] .toggle-dot { transform: translateX(20px); }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 312px;
+            padding: 3rem;
+            flex-grow: 1;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(128, 0, 0, 0.04);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+        }
+
+        .book-card.glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .book-card.glass-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(128, 0, 0, 0.12);
+        }
+        
+        .book-card.glass-card:hover::before {
+            opacity: 1;
+        }
+
+        .hero-banner {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--hero-end) 100%);
+            color: #fff;
+            padding: 4rem 3rem;
+            border-radius: 24px;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 40px rgba(128, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            right: -120px;
+            top: -120px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent 65%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(128, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            opacity: 1;
+            background: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(128, 0, 0, 0.3);
+        }
+
+        .btn:not(.btn-primary):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+        }
+
+        .badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-family: inherit;
+            box-sizing: border-box;
+            margin-bottom: 1rem;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary);
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+    <script>
+        const storedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', storedTheme);
+    </script>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <img src="{% static 'library/images/myers_crest.jpg' %}" alt="Myer's College">
+            <h2>Myer's College<br><small style="font-size: 0.8rem; font-weight: 400; color: var(--secondary);">Digital Library</small></h2>
+        </div>
+        <nav class="nav-links">
+            <a href="{% url 'book_list' %}" class="nav-item {% if request.resolver_match.url_name == 'book_list' %}active{% endif %}">🏛️ Dashboard</a>
+            
+            {% if user.userprofile.role == 'teacher' or user.userprofile.role == 'admin' %}
+            <a href="{% url 'upload_book' %}" class="nav-item {% if request.resolver_match.url_name == 'upload_book' %}active{% endif %}">📥 Upload Resources</a>
+            <a href="{% url 'manage_students' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_students' %}active{% endif %}">👨‍🏫 Student Management</a>
+            {% endif %}
+
+            <a href="{% url 'ai_chat' %}" class="nav-item {% if request.resolver_match.url_name == 'ai_chat' %}active{% endif %}">📖 AI Assistant</a>
+            
+            <hr style="width: 100%; border: 0; border-top: 1px solid var(--border); margin: 1rem 0;">
+            
+            {% if user.userprofile.role == 'admin' %}
+            <a href="{% url 'admin_hub' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_hub' %}active{% endif %}">🔐 Admin Panel</a>
+            {% endif %}
+            
+            <a href="{% url 'logout' %}" class="nav-item" style="color: var(--secondary);">🚪 Logout</a>
+
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <span style="font-size: 0.8rem; font-weight: 700;">🌗 Theme Mode</span>
+                <div style="background: rgba(0,0,0,0.1); width: 44px; height: 24px; border-radius: 12px; padding: 2px;">
+                    <div class="toggle-dot"></div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const target = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('theme', target);
+        }
+    </script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 50
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

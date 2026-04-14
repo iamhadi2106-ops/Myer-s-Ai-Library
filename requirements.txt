@@ -1,4 +1,6 @@
-streamlit
+django>=4.2
+gunicorn
+whitenoise
 groq
 langchain
 langchain-groq
@@ -10,9 +12,6 @@ faiss-cpu
 duckduckgo_search
 requests
 python-dotenv
-pyautogui
-pillow
-pyttsx3
-speechrecognition
 googlesearch-python
 scholarly
+gTTS
