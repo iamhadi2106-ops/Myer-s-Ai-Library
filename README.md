@@ -1,46 +1,76 @@
-# 🏛️ Myer's College Digital Library Portal
+# Myer's College Digital Library Portal
 
-Official Digital Archive and AI Research System for Myer's College.
+A Django-based digital library platform for managing college books, searching records, and interacting with an AI assistant.
 
-## 🚀 Quick Launch (Windows)
+## Quick Start (Windows)
 
-1. **Setup**: Run `Setup_Library.bat`. This will create a secure environment and install all necessary academic library components.
-2. **API Key**: Open the `.env` file and replace `your_api_key_here` with your **Groq API Key**.
-3. **Start**: Double-click `Start_Library.bat` to launch the digital portal in your browser.
+1. Run `Setup_Library.bat` to create the environment and install dependencies.
+2. Configure your Groq key:
+   - either in `.env` as `GROQ_API_KEY=...`
+   - or in the Admin Panel > AI Configuration page
+3. Run `Start_Library.bat` to launch the app.
+4. Open `http://127.0.0.1:8000/login/`.
+
+## Core Features
+
+- **Library Dashboard**
+  - Clean, formal interface with light/dark mode.
+  - Real-time filtering, title sorting, and collection stats.
+- **Book Management**
+  - Add books by title and author from the Upload Resources page.
+  - Remove books (teacher/admin).
+- **Excel Catalog Sync**
+  - Automatically imports records from `Library Books (Autosaved).xlsx`.
+  - Attempts to map title/author/description/full text/external link columns.
+  - Ignores malformed rows and avoids duplicate titles.
+- **AI Assistant**
+  - Text chat endpoint for collection-focused Q&A.
+  - Voice input pipeline (speech-to-text + AI response + optional spoken reply).
+- **Reader/Download Logic**
+  - Backend supports local file download and optional external URL fallback.
+- **Access Control**
+  - Role-based permissions for student, teacher, and admin users.
+  - Student suspension controls for staff users.
+
+## Tech Stack
+
+- Django 5
+- SQLite (default)
+- LangChain + FAISS + HuggingFace embeddings
+- Groq API for LLM and speech transcription
+- WhiteNoise for static file serving
+
+## Project Structure (Key Paths)
+
+- `library/` - app models, views, forms, routes, AI integration
+- `myers_college/` - project settings and root URLs
+- `templates/` - HTML templates and UI pages
+- `media/` - uploaded/generated media
+- `data/faiss_index/` - local vector index
+
+## Deployment (Render - Free Tier)
+
+Use a **Web Service** with:
+
+- **Build command**
+  - `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
+- **Start command**
+  - `gunicorn myers_college.wsgi:application`
+
+Set environment variables:
+
+- `SECRET_KEY` = strong random value
+- `DEBUG` = `False`
+- `ALLOWED_HOSTS` = `.onrender.com`
+- `CSRF_TRUSTED_ORIGINS` = `https://<your-service>.onrender.com`
+- `GROQ_API_KEY` = your Groq key
+
+## Notes
+
+- Free hosting tiers may sleep after inactivity (cold start on first request).
+- `favicon.ico` 404 in local development is harmless unless you add a favicon.
+- For CSRF issues in local browsers, clear site cookies for `localhost`/`127.0.0.1` and retry.
 
 ---
-
-## 📖 System Features
-
-### 1. 🏛️ Dashboard
-A central hub for digital access. Provides a high-level overview of the Myer's College academic archive.
-
-### 2. 📥 Resource Ingest
-Allows faculty and authorized users to upload official course books and PDFs. The system automatically fragments and indexes these documents into the secure local archive for later retrieval.
-
-### 3. 🔍 Global Research
-A specialized tool for searching external academic databases. Useful for students conducting broad research beyond the immediate college collection.
-
-### 4. 📖 Official AI Librarian
-A custom AI assistant representing Myer's College. It is trained to provide academic summaries, literature analysis, and historical context of indexed works.
-
-### 5. 💬 Direct Chat (Archive Q&A)
-Powered by **RAG (Retrieval-Augmented Generation)**. Students can ask natural language questions directly to the uploaded college books. The AI will only answer based on the provided context, ensuring alignment with school curriculum.
-
----
-
-## 🛠️ Technical Requirements
-
-- **Python**: Version 3.10 or higher.
-- **API Access**: A valid Groq API Key is required for the AI Librarian and Archive Chat functionalities.
-- **Internet**: Required for initial setup and for the Global Research/AI services to communicate with Groq cloud nodes.
-
-## 🔒 Data Security & Privacy
-
-- **Local Storage**: All uploaded PDFs are stored locally in the `uploads/` directory.
-- **Vector Database**: Document indexes are stored in the `data/faiss_index` folder.
-- **No External Data Leakage**: The system is designed to prioritize local information over general web data when queried via the Direct Chat module.
-
----
-**Developed for Myer's College by Muhammad Hadi**  
-*© 2026 Myer’s College Digital Infrastructure*
+Developed for Myer's College  
+© 2026 Myer's College Digital Infrastructure
